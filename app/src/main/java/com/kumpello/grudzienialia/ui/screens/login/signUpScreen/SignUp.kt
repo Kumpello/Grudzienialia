@@ -1,4 +1,4 @@
-package com.kumpello.grudzienialia.ui.screens.login.LoginScreen
+package com.kumpello.grudzienialia.ui.screens.login.signUpScreen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontFamily.Companion.Cursive
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
@@ -27,14 +26,14 @@ import com.kumpello.grudzienialia.ui.navigation.MainRoutes
 import com.kumpello.grudzienialia.ui.theme.Purple700
 
 @Composable
-fun LoginPage(navController: NavHostController) {
+fun SignUpPage(navController: NavHostController) {
     Box(modifier = Modifier.fillMaxSize()) {
         ClickableText(
-            text = AnnotatedString("Sign up here"),
+            text = AnnotatedString("Login here"),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(20.dp),
-            onClick = { navController.navigate(MainRoutes.SignUp.route) },
+            onClick = { navController.navigate(MainRoutes.Login.route) },
             style = TextStyle(
                 fontSize = 14.sp,
                 fontFamily = FontFamily.Default,
@@ -52,7 +51,7 @@ fun LoginPage(navController: NavHostController) {
         val username = remember { mutableStateOf(TextFieldValue()) }
         val password = remember { mutableStateOf(TextFieldValue()) }
 
-        Text(text = "Login", style = TextStyle(fontSize = 40.sp, fontFamily = Cursive))
+        Text(text = "Login", style = TextStyle(fontSize = 40.sp, fontFamily = FontFamily.Cursive))
 
         Spacer(modifier = Modifier.height(20.dp))
         TextField(
@@ -77,7 +76,7 @@ fun LoginPage(navController: NavHostController) {
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text(text = "Login")
+                Text(text = "Sign up")
             }
         }
 

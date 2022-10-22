@@ -1,4 +1,4 @@
-package com.kumpello.grudzienialia.ui.screens.login.MainScreen
+package com.kumpello.grudzienialia.ui.screens.login.mainScreen
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,13 +11,14 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.kumpello.grudzienialia.ui.navigation.MainRoutes
-import com.kumpello.grudzienialia.ui.screens.login.ForgotPasswordScreen.ForgotPassword
-import com.kumpello.grudzienialia.ui.screens.login.LoginScreen.LoginPage
-import com.kumpello.grudzienialia.ui.screens.login.SignUpScreen.SignUp
+import com.kumpello.grudzienialia.ui.screens.login.forgotPasswordScreen.ForgotPassword
+import com.kumpello.grudzienialia.ui.screens.login.loginScreen.LoginPage
+import com.kumpello.grudzienialia.ui.screens.login.signUpScreen.SignUpPage
 import com.kumpello.grudzienialia.ui.screens.login.splashScreen.Splash
 import com.kumpello.grudzienialia.ui.theme.GrudzienialiaTheme
 
@@ -49,10 +50,10 @@ fun MainNavigationGraph(){
         }
 
         composable(MainRoutes.SignUp.route) {
-            SignUp(navController = navController)
+            SignUpPage(navController = navController)
         }
 
-        composable(MainRoutes.ForgotPassword.route) { navBackStack ->
+        composable(MainRoutes.ForgotPassword.route) {
             ForgotPassword(navController = navController)
         }
     }
@@ -70,5 +71,13 @@ fun MainNavigation() {
         ) {
             MainNavigationGraph()
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    GrudzienialiaTheme {
+        MainNavigation()
     }
 }
