@@ -7,10 +7,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import javax.inject.Inject
 
-class FirebaseAuthentication(activity: Activity) {
+class FirebaseAuthentication @Inject constructor(private var activity: Activity) {
     private var auth: FirebaseAuth = Firebase.auth
-    private var activity: Activity = activity
     private lateinit var user: FirebaseUser
 
     fun checkIfUserIsLogged(): Boolean {

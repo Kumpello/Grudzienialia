@@ -15,14 +15,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.kumpello.grudzienialia.domain.usecase.FirebaseAuthentication
 import com.kumpello.grudzienialia.ui.navigation.MainRoutes
 import com.kumpello.grudzienialia.ui.screens.login.forgotPasswordScreen.ForgotPassword
 import com.kumpello.grudzienialia.ui.screens.login.loginScreen.LoginPage
 import com.kumpello.grudzienialia.ui.screens.login.signUpScreen.SignUpPage
 import com.kumpello.grudzienialia.ui.screens.login.splashScreen.Splash
 import com.kumpello.grudzienialia.ui.theme.GrudzienialiaTheme
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject lateinit var firebaseAuthentication: FirebaseAuthentication
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
