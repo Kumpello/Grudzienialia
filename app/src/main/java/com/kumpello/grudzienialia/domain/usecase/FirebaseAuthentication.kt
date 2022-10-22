@@ -18,7 +18,7 @@ class FirebaseAuthentication @Inject constructor(private var activity: Activity)
     }
 
     //Callback should be using Unit?
-    fun createUser(email: String, password: String, callback: (Boolean) -> com.kumpello.grudzienialia.domain.model.Result) {
+    fun create(email: String, password: String, callback: (Boolean) -> com.kumpello.grudzienialia.domain.model.Result) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(activity) { task ->
                 if (task.isSuccessful) {
@@ -38,7 +38,7 @@ class FirebaseAuthentication @Inject constructor(private var activity: Activity)
             }
     }
 
-    fun singInByPassword(email: String, password: String, callback: (Boolean) -> com.kumpello.grudzienialia.domain.model.Result) {
+    fun singIn(email: String, password: String, callback: (Boolean) -> com.kumpello.grudzienialia.domain.model.Result) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(activity) { task ->
                 if (task.isSuccessful) {
@@ -54,6 +54,16 @@ class FirebaseAuthentication @Inject constructor(private var activity: Activity)
                         Toast.LENGTH_SHORT).show()
                     updateUI(null)*/
                     callback(false).accept()
+                }
+            }
+    }
+
+    fun resetPassword(email: String, callback: (Boolean) -> com.kumpello.grudzienialia.domain.model.Result) {
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d(TAG, "Email sent.")
+                    callback(true).accept()
                 }
             }
     }
