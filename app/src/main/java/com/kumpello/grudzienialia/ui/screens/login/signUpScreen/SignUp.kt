@@ -1,5 +1,7 @@
 package com.kumpello.grudzienialia.ui.screens.login.signUpScreen
 
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
@@ -12,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -22,11 +25,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.kumpello.grudzienialia.domain.usecase.FirebaseAuthentication
 import com.kumpello.grudzienialia.ui.navigation.MainRoutes
+import com.kumpello.grudzienialia.ui.screens.application.applicationScreen.ApplicationActivity
 import com.kumpello.grudzienialia.ui.theme.Purple700
 
 @Composable
-fun SignUpPage(navController: NavHostController) {
+fun SignUpPage(navController: NavHostController, firebaseAuthentication: FirebaseAuthentication) {
+    val mContext = LocalContext.current
+
     Box(modifier = Modifier.fillMaxSize()) {
         ClickableText(
             text = AnnotatedString("Login here"),
@@ -70,7 +77,17 @@ fun SignUpPage(navController: NavHostController) {
         Spacer(modifier = Modifier.height(20.dp))
         Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
             Button(
-                onClick = { },
+                onClick = {
+                    firebaseAuthentication.create(username.toString(), password.toString()) {
+                    if (it) {
+                        navController.navigate(MainRoutes.Login.route)
+                        Toast.makeText(mContext, "Account created.",
+                            Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(mContext, "Authentication failed.",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                }},
                 shape = RoundedCornerShape(50.dp),
                 modifier = Modifier
                     .fillMaxWidth()

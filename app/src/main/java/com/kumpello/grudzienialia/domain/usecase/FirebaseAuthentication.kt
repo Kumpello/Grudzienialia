@@ -17,43 +17,35 @@ class FirebaseAuthentication @Inject constructor(private var activity: Activity)
         return auth.currentUser != null
     }
 
-    //Callback should be using Unit?
-    fun create(email: String, password: String, callback: (Boolean) -> com.kumpello.grudzienialia.domain.model.Result) {
+    fun create(email: String, password: String, callback: (Boolean) -> Unit) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(activity) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "createUserWithEmail:success")
                     user = auth.currentUser!!
-                    //updateUI(user)
-                    callback(true).accept()
+                    callback(true)
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "createUserWithEmail:failure", task.exception)
-/*                    Toast.makeText(baseContext, "Authentication failed.",
-                        Toast.LENGTH_SHORT).show()
-                    updateUI(null)*/
-                    callback(false).accept()
+                    callback(false)
                 }
             }
     }
 
-    fun singIn(email: String, password: String, callback: (Boolean) -> com.kumpello.grudzienialia.domain.model.Result) {
+    fun singIn(email: String, password: String, callback: (Boolean) -> Unit) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(activity) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithEmail:success")
-                    val user = auth.currentUser
-                    //updateUI(user)
-                    callback(true).accept()
+                    user = auth.currentUser!!
+                    //Todo call some class to save user!
+                    callback(true)
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithEmail:failure", task.exception)
-/*                    Toast.makeText(baseContext, "Authentication failed.",
-                        Toast.LENGTH_SHORT).show()
-                    updateUI(null)*/
-                    callback(false).accept()
+                    callback(false)
                 }
             }
     }

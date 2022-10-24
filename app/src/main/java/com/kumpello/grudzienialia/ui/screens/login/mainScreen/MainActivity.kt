@@ -38,11 +38,16 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    fun getFirebase(): FirebaseAuthentication {
+        return firebaseAuthentication
+    }
 }
 
 @Composable
 fun MainNavigationGraph(){
     val navController = rememberNavController()
+    val firebaseAuthentication = MainActivity().getFirebase()
 
     NavHost(navController = navController, startDestination = MainRoutes.Splash.route) {
 
@@ -52,15 +57,15 @@ fun MainNavigationGraph(){
 
 
         composable(MainRoutes.Login.route) {
-            LoginPage(navController = navController)
+            LoginPage(navController = navController, firebaseAuthentication = firebaseAuthentication)
         }
 
         composable(MainRoutes.SignUp.route) {
-            SignUpPage(navController = navController)
+            SignUpPage(navController = navController, firebaseAuthentication = firebaseAuthentication)
         }
 
         composable(MainRoutes.ForgotPassword.route) {
-            ForgotPassword(navController = navController)
+            ForgotPassword(navController = navController, firebaseAuthentication = firebaseAuthentication)
         }
     }
 }
