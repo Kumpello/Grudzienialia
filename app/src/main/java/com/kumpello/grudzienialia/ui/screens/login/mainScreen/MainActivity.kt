@@ -1,5 +1,6 @@
 package com.kumpello.grudzienialia.ui.screens.login.mainScreen
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.kumpello.grudzienialia.domain.usecase.FirebaseAuthentication
 import com.kumpello.grudzienialia.ui.navigation.MainRoutes
+import com.kumpello.grudzienialia.ui.screens.application.applicationScreen.ApplicationActivity
 import com.kumpello.grudzienialia.ui.screens.login.forgotPasswordScreen.ForgotPassword
 import com.kumpello.grudzienialia.ui.screens.login.loginScreen.LoginPage
 import com.kumpello.grudzienialia.ui.screens.login.signUpScreen.SignUpPage
@@ -31,6 +33,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (firebaseAuthentication.isUserLogged()) {
+            this.startActivity(Intent(this, ApplicationActivity::class.java))
+        }
         setContent {
             GrudzienialiaTheme {
                 // A surface container using the 'background' color from the theme

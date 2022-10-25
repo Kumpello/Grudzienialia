@@ -13,7 +13,7 @@ class FirebaseAuthentication @Inject constructor(private var activity: Activity)
     private var auth: FirebaseAuth = Firebase.auth
     private lateinit var user: FirebaseUser
 
-    fun checkIfUserIsLogged(): Boolean {
+    fun isUserLogged(): Boolean {
         return auth.currentUser != null
     }
 

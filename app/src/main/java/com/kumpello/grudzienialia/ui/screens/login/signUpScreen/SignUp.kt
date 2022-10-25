@@ -83,6 +83,7 @@ fun SignUpPage(navController: NavHostController, firebaseAuthentication: Firebas
                         navController.navigate(MainRoutes.Login.route)
                         Toast.makeText(mContext, "Account created.",
                             Toast.LENGTH_SHORT).show()
+                        mContext.startActivity(Intent(mContext, ApplicationActivity::class.java))
                     } else {
                         Toast.makeText(mContext, "Authentication failed.",
                             Toast.LENGTH_SHORT).show()
