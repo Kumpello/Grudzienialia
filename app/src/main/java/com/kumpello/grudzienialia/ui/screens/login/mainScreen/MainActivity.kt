@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -25,58 +29,66 @@ import com.kumpello.grudzienialia.ui.screens.login.signUpScreen.SignUpPage
 import com.kumpello.grudzienialia.ui.screens.login.splashScreen.Splash
 import com.kumpello.grudzienialia.ui.theme.GrudzienialiaTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject lateinit var firebaseAuthentication: FirebaseAuthentication
+    lateinit var viewModel: MainActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (firebaseAuthentication.isUserLogged()) {
+
+        val viewModel: MainActivityViewModel by viewModels()
+        this.viewModel = viewModel
+        val activity = this
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.firebaseAuthentication.setActivity(activity)
+            }
+        }
+        if (viewModel.firebaseAuthentication.isUserLogged()) {
             this.startActivity(Intent(this, ApplicationActivity::class.java))
         }
         setContent {
             GrudzienialiaTheme {
-                // A surface container using the 'background' color from the theme
-                MainNavigation()
+                MainNavigation(activity)
             }
         }
     }
 
     fun getFirebase(): FirebaseAuthentication {
-        return firebaseAuthentication
+        return viewModel.firebaseAuthentication
     }
 }
 
 @Composable
-fun MainNavigationGraph(){
+fun MainNavigationGraph(activity: MainActivity) {
     val navController = rememberNavController()
-    val firebaseAuthentication = MainActivity().getFirebase()
+    val firebaseAuthentication = activity.getFirebase()
 
     NavHost(navController = navController, startDestination = MainRoutes.Splash.route) {
 
         composable(MainRoutes.Splash.route) {
-            Splash(navController = navController)
+            Splash(navController)
         }
 
-
         composable(MainRoutes.Login.route) {
-            LoginPage(navController = navController, firebaseAuthentication = firebaseAuthentication)
+            LoginPage(navController, firebaseAuthentication)
         }
 
         composable(MainRoutes.SignUp.route) {
-            SignUpPage(navController = navController, firebaseAuthentication = firebaseAuthentication)
+            SignUpPage(navController, firebaseAuthentication)
         }
 
         composable(MainRoutes.ForgotPassword.route) {
-            ForgotPassword(navController = navController, firebaseAuthentication = firebaseAuthentication)
+            ForgotPassword(navController, firebaseAuthentication)
         }
     }
 }
 
 @Composable
-fun MainNavigation() {
+fun MainNavigation(activity: MainActivity) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colors.background
@@ -85,7 +97,7 @@ fun MainNavigation() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            MainNavigationGraph()
+            MainNavigationGraph(activity)
         }
     }
 }
@@ -94,6 +106,6 @@ fun MainNavigation() {
 @Composable
 fun DefaultPreview() {
     GrudzienialiaTheme {
-        MainNavigation()
+        MainNavigation(MainActivity())
     }
 }

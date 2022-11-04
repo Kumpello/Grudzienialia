@@ -7,9 +7,13 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import dagger.hilt.android.scopes.ViewModelScoped
 import javax.inject.Inject
 
-class FirebaseAuthentication @Inject constructor(private var activity: Activity) {
+@ViewModelScoped
+class FirebaseAuthentication @Inject constructor() {
+
+    private lateinit var activity: Activity
     private var auth: FirebaseAuth = Firebase.auth
     private lateinit var user: FirebaseUser
 
@@ -50,12 +54,12 @@ class FirebaseAuthentication @Inject constructor(private var activity: Activity)
             }
     }
 
-    fun resetPassword(email: String, callback: (Boolean) -> com.kumpello.grudzienialia.domain.model.Result) {
+    fun resetPassword(email: String, callback: (Boolean) -> Unit) {
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.d(TAG, "Email sent.")
-                    callback(true).accept()
+                    callback(true)
                 }
             }
     }
@@ -63,4 +67,9 @@ class FirebaseAuthentication @Inject constructor(private var activity: Activity)
     fun getUser(): FirebaseUser {
         return user
     }
+
+    fun setActivity(activity: Activity) {
+        this.activity = activity
+    }
+
 }
