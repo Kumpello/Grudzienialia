@@ -9,8 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.himanshoe.kalendar.Kalendar
-import com.himanshoe.kalendar.model.KalendarType
 
 @Composable
 fun Calendar() {
@@ -22,7 +20,7 @@ fun Calendar() {
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            Kalendar(kalendarType = KalendarType.Firey)
+
         }
     })
 }
