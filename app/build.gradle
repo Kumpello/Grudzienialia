@@ -63,6 +63,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.4.+'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation("com.himanshoe:kalendar:1.2.0")
     kapt("com.google.dagger:hilt-android-compiler:2.44")
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
