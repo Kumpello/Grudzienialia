@@ -12,8 +12,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.kumpello.grudzienialia.R
+import com.kumpello.grudzienialia.ui.screens.application.calendarScreen.Calendar
 
 @Composable
 fun Friends() {
@@ -32,4 +34,10 @@ fun Friends() {
             fontSize = 20.sp
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FriendsPreview() {
+    Friends()
 }

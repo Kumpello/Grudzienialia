@@ -11,10 +11,9 @@ import dagger.hilt.android.scopes.ViewModelScoped
 import javax.inject.Inject
 
 @ViewModelScoped
-class FirebaseAuthentication @Inject constructor() {
+class FirebaseAuthentication @Inject constructor(private val auth: FirebaseAuth) {
 
     private lateinit var activity: Activity
-    private var auth: FirebaseAuth = Firebase.auth
     private lateinit var user: FirebaseUser
 
     fun isUserLogged(): Boolean {

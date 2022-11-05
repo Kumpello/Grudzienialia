@@ -3,6 +3,7 @@ package com.kumpello.grudzienialia.ui.screens.application.applicationScreen
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigationItem
@@ -29,10 +30,18 @@ import com.kumpello.grudzienialia.ui.navigation.BottomBarRoutes
 import com.kumpello.grudzienialia.ui.screens.application.addPostScreen.AddPost
 import com.kumpello.grudzienialia.ui.screens.application.calendarScreen.Calendar
 import com.kumpello.grudzienialia.ui.screens.application.friendsScreen.Friends
+import com.kumpello.grudzienialia.ui.screens.login.mainScreen.MainActivityViewModel
 
 class ApplicationActivity : AppCompatActivity() {
+    lateinit var viewModel: ApplicationActivityViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val viewModel: ApplicationActivityViewModel by viewModels()
+        this.viewModel = viewModel
+        val activity = this
+
         setContent{
             ApplicationScreenView()
         }
