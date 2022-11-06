@@ -1,6 +1,5 @@
 package com.kumpello.grudzienialia.domain.usecase
 
-import android.R
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
@@ -10,7 +9,10 @@ import javax.inject.Inject
 
 
 @ViewModelScoped
-class FriendsService @Inject constructor(val firebaseAuth: FirebaseAuth, val database: DatabaseReference) {
+class FriendsService @Inject constructor(
+    firebaseAuth: FirebaseAuth,
+    private val database: DatabaseReference
+) {
 
     private val userIDKey = "userID"
     private val emailKey = "email"
@@ -19,48 +21,39 @@ class FriendsService @Inject constructor(val firebaseAuth: FirebaseAuth, val dat
     private val contactsKey = "contacts"
     private val userID = firebaseAuth.currentUser!!.uid
     private val userEmail = firebaseAuth.currentUser!!.email
+    private val userHash = userEmail.hashCode()
 
-    fun addFriend(friendsEmail: String, callback: (Boolean) -> Unit) {
-        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+    fun addFriend(friendsEmail: String, callback: (Result<Boolean>) -> Unit) {
+        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+".toRegex()
         if (friendsEmail.isEmpty()) {
-            callback(false)
-
+            callback(Result.failure(Exception("Friends email is empty")))
         }
         if (!friendsEmail.matches(emailPattern)) {
-            callback(false)
+            callback(Result.failure(Exception("Friends email doesn't match patter ")))
         }
-        val email = getEmail()
-        val userHash: Int = email.hashCode()
+        val userHash: Int = userEmail.hashCode()
         findFriendID(friendsEmail) {
-            fun onSuccess(result: String?) {
-                Log.d("FriendsService", "friendsID is $result")
-                if (result != null) {
-                    database.child(userFriendsKey).child(java.lang.String.valueOf(userType))
-                        .child(userHash).child(contactsKey).child(result).setValue(true)
-                    onResult.onSuccess(result)
-                }
-            }
-
-            fun onError(error: Throwable?) {
-                onResult.onError(Throwable(resources.getString(R.string.friends_id_not_found)))
+            result ->
+            if (result.isSuccess) {
+                database.child(userFriendsKey).child(userHash.toString()).child(contactsKey).child(result.getOrThrow()).setValue(true)
+                callback(Result.success(true))
+            } else {
+                callback(Result.failure(Exception("Couldn't find friends ID")))
             }
         }
-        callback(true)
     }
 
-    fun removeFriend(friendsEmail: String, callback: (Boolean) -> Unit) {
-        val email = getEmail()
-        val userHash: String = getHash(email)
-        findFriendID(friendsEmail, type, object : OnResult<String?>() {
-            fun onSuccess(result: String?) {
-                database.child(userFriendsKey).child(java.lang.String.valueOf(type)).child(userHash)
-                    .child(contactsKey).child(result).setValue(false)
-            }
-
-            fun onError(error: Throwable?) {
-                Log.d("Error removing friend", "$userHash $type")
-            }
-        })
+    fun removeFriend(friendsEmail: String, callback: (Result<Boolean>) -> Unit) {
+        findFriendID(friendsEmail) {
+            result ->
+                if (result.isSuccess) {
+                    database.child(userFriendsKey).child(userHash.toString()).child(contactsKey).child(result.getOrThrow()).setValue(false)
+                    callback.invoke(Result.success(true))
+                } else {
+                    Log.d("Error removing friend", userHash.toString())
+                    callback.invoke(Result.failure(result.exceptionOrNull()!!))
+                }
+        }
     }
 
     fun changeNick(nick: String) {
@@ -68,8 +61,8 @@ class FriendsService @Inject constructor(val firebaseAuth: FirebaseAuth, val dat
         database.child(usersKey).child(userID).child("nick").setValue(nick)
     }
 
-    fun getFriendsList(callback: (Boolean) -> Unit) {
-        val userHash: Int = userEmail.hashCode()
+    fun getFriendsList(callback: (Result<List<User>>) -> Unit) {
+        val friendsList: MutableList<User> = ArrayList()
         database.child(userFriendsKey).child(userHash.toString()).child(contactsKey).get()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -77,103 +70,98 @@ class FriendsService @Inject constructor(val firebaseAuth: FirebaseAuth, val dat
                         val tempMap = task.result.value as HashMap<String, Boolean>
                         for ((key) in tempMap.entries) {
                             Log.d("Getting friend list, friend key", key)
-                            getUser(key, object : OnResult<User?>() {
-                                fun onSuccess(result: User) {
-                                    Log.d("Adding friend ", result.email)
-                                    handler.onNext(result)
+                            getUser(key) {
+                                result ->
+                                if (result.isSuccess) {
+                                    friendsList.add(result.getOrThrow())
                                 }
-
-                                fun onError(error: Throwable?) {
-                                    //ToDO
-                                }
-                            })
+                            }
                         }
+                        callback.invoke(Result.success(friendsList))
                     }
-                } else {
-                    Log.e("firebase", "Error getting data", task.getException())
-                }
-            }
+            } else {
+            Log.e("firebase", "Error getting data", task.exception)
+            callback.invoke(Result.failure(task.exception!!))
+        }
     }
+}
 
-    private fun findFriendID(friendsEmail: String, callback: (String) -> Unit) {
-        val friendsHash: Int = friendsEmail.hashCode()
-        database.child(userFriendsKey).child(friendsHash.toString())
-            .child(userIDKey).get().addOnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                    Log.e("firebase", "Error getting data", task.exception)
-                    callback(null.toString())
-                } else {
-                    Log.d("FriendsService", "Success finding friends ID")
-                    callback(task.result.value.toString())
-                }
-            }
-    }
-
-    fun getUserIDbyEmail(email: String,  callback: (String) -> Unit) {
-        val emailHash: Int = email.hashCode()
-        database.child(userFriendsKey).child(emailHash.toString())
-            .child(userIDKey).get().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("Adding friend, hash:", emailHash.toString())
-                    handler.onSuccess(task.result.value as String)
-                } else {
-                    handler.onError(task.exception)
-                }
-            }
-    }
-
-    fun getSize(callback: (Int) -> Unit) {
-        val userHash: Int = userEmail.hashCode()
-        database.child(userFriendsKey).child(userHash.toString()).child(contactsKey).get()
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val tempMap =
-                        task.result.value as HashMap<String, Boolean>
-                    if (tempMap != null) {
-                        callback(tempMap.size)
-                    } else {
-                        callback(-1)
-                    }
-                }
-            }
-    }
-
-    fun getUser(userID: String, callback: (Result<User>) -> Unit) {
-        Log.d("getUser ", userID)
-        database.child(usersKey).child(userID).get().addOnCompleteListener { task ->
+private fun findFriendID(friendsEmail: String, callback: (Result<String>) -> Unit) {
+    val friendsHash: Int = friendsEmail.hashCode()
+    database.child(userFriendsKey).child(friendsHash.toString())
+        .child(userIDKey).get().addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.e("firebase", "Error getting data", task.exception)
-                callback(null)
+                callback(Result.failure(task.exception!!))
             } else {
-                val tempMap: Map<String, String> = task.result.value as Map<String, String>
-                var user: User? = null
+                Log.d("FriendsService", "Success finding friends ID")
+                callback(Result.success(task.result.value.toString()))
+            }
+        }
+}
+
+fun getUserIDbyEmail(email: String, callback: (Result<String>) -> Unit) {
+    val emailHash: Int = email.hashCode()
+    database.child(userFriendsKey).child(emailHash.toString())
+        .child(userIDKey).get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("Adding friend, hash:", emailHash.toString())
+                callback(Result.success(task.result.value.toString()))
+            } else {
+                callback(Result.failure(task.exception!!))
+            }
+        }
+}
+
+fun getSize(callback: (Result<Int>) -> Unit) {
+    database.child(userFriendsKey).child(userHash.toString()).child(contactsKey).get()
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val tempMap =
+                    task.result.value as HashMap<String, Boolean>
                 if (tempMap != null) {
-                    user = User(
-                        tempMap[userIDKey],
-                        tempMap[emailKey],
-                    )
+                    callback(Result.success(tempMap.size))
                 } else {
-                    //handler.onError(Throwable("User has no friends"))
-                    callback(false)
-                }
-                if (user != null) {
-                    Log.d("User added ", user.email + " " + user.userId)
-                    callback(Result.success(user))
-                    //Todo rest of results like this!!! Old errors from github needed
-                } else {
-                    //handler.onError(Throwable("Error getting user!"))
+                    callback(Result.failure(Throwable("User has no friends")))
                 }
             }
         }
-    }
+}
 
-    private fun addUserToFriendsDataBase(user: User) {
-        val userHash: String = user.email
-        Log.d("FriendsService", "userHash: $userHash")
-        database.child(userFriendsKey).child(userHash).child(emailKey)
-            .setValue(user.email)
-        database.child(userFriendsKey).child(userHash).child(userIDKey)
-            .setValue(user.userId)
+fun getUser(userID: String, callback: (Result<User>) -> Unit) {
+    Log.d("getUser ", userID)
+    database.child(usersKey).child(userID).get().addOnCompleteListener { task ->
+        if (!task.isSuccessful) {
+            Log.e("firebase", "Error getting data", task.exception)
+            callback(Result.failure(task.exception!!.cause!!))
+        } else {
+            val tempMap: Map<String, String> = task.result.value as Map<String, String>
+            var user: User? = null
+            if (tempMap != null) {
+                user = User(
+                    tempMap[emailKey]!!,
+                    tempMap[userIDKey]!!
+                )
+            } else {
+                callback(Result.failure(Throwable("User has no friends")))
+            }
+            if (user != null) {
+                Log.d("User added ", user.email + " " + user.userId)
+                callback(Result.success(user))
+            } else {
+                callback(Result.failure(Throwable("Error getting user")))
+            }
+        }
     }
+}
+
+fun addUserToFriendsDataBase(user: User) {
+    val userHash: String = user.email
+    Log.d("FriendsService", "userHash: $userHash")
+    database.child(userFriendsKey).child(userHash).child(emailKey)
+        .setValue(user.email)
+    database.child(userFriendsKey).child(userHash).child(userIDKey)
+        .setValue(user.userId)
+}
 
 }
