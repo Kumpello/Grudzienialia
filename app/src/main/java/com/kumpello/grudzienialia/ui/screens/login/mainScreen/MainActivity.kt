@@ -20,7 +20,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.kumpello.grudzienialia.domain.usecase.FirebaseAuthentication
 import com.kumpello.grudzienialia.ui.navigation.MainRoutes
 import com.kumpello.grudzienialia.ui.screens.application.applicationScreen.ApplicationActivity
 import com.kumpello.grudzienialia.ui.screens.login.forgotPasswordScreen.ForgotPassword
@@ -30,11 +29,10 @@ import com.kumpello.grudzienialia.ui.screens.login.splashScreen.Splash
 import com.kumpello.grudzienialia.ui.theme.GrudzienialiaTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    lateinit var viewModel: MainActivityViewModel
+    private lateinit var viewModel: MainActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,60 +50,59 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             GrudzienialiaTheme {
-                MainNavigation(activity)
+                MainNavigation()
             }
         }
     }
 
-    fun getFirebase(): FirebaseAuthentication {
-        return viewModel.firebaseAuthentication
-    }
-}
 
-@Composable
-fun MainNavigationGraph(activity: MainActivity) {
-    val navController = rememberNavController()
-    val firebaseAuthentication = activity.getFirebase()
+    @Composable
+    fun MainNavigationGraph() {
+        val navController = rememberNavController()
+        val firebaseAuthentication = viewModel.firebaseAuthentication
 
-    NavHost(navController = navController, startDestination = MainRoutes.Splash.route) {
+        NavHost(navController = navController, startDestination = MainRoutes.Splash.route) {
 
-        composable(MainRoutes.Splash.route) {
-            Splash(navController)
-        }
+            composable(MainRoutes.Splash.route) {
+                Splash(navController)
+            }
 
-        composable(MainRoutes.Login.route) {
-            LoginPage(navController, firebaseAuthentication)
-        }
+            composable(MainRoutes.Login.route) {
+                LoginPage(navController, firebaseAuthentication)
+            }
 
-        composable(MainRoutes.SignUp.route) {
-            SignUpPage(navController, firebaseAuthentication)
-        }
+            composable(MainRoutes.SignUp.route) {
+                SignUpPage(navController, firebaseAuthentication)
+            }
 
-        composable(MainRoutes.ForgotPassword.route) {
-            ForgotPassword(navController, firebaseAuthentication)
+            composable(MainRoutes.ForgotPassword.route) {
+                ForgotPassword(navController, firebaseAuthentication)
+            }
         }
     }
-}
 
-@Composable
-fun MainNavigation(activity: MainActivity) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colors.background
-    ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+    @Composable
+    fun MainNavigation() {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colors.background
         ) {
-            MainNavigationGraph(activity)
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                MainNavigationGraph()
+            }
         }
     }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun DefaultPreview() {
+        GrudzienialiaTheme {
+            MainNavigation()
+        }
+    }
+
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    GrudzienialiaTheme {
-        MainNavigation(MainActivity())
-    }
-}

@@ -1,9 +1,9 @@
 package com.kumpello.grudzienialia.ui.screens.application.applicationScreen
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigationItem
@@ -18,19 +18,16 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
-
 import androidx.navigation.NavHostController
-import androidx.navigation.Navigation
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.kumpello.grudzienialia.R
+import com.kumpello.grudzienialia.domain.usecase.FriendsService
 import com.kumpello.grudzienialia.ui.navigation.BottomBarRoutes
 import com.kumpello.grudzienialia.ui.screens.application.addPostScreen.AddPost
 import com.kumpello.grudzienialia.ui.screens.application.calendarScreen.Calendar
 import com.kumpello.grudzienialia.ui.screens.application.friendsScreen.Friends
-import com.kumpello.grudzienialia.ui.screens.login.mainScreen.MainActivityViewModel
 
 class ApplicationActivity : AppCompatActivity() {
     lateinit var viewModel: ApplicationActivityViewModel
@@ -69,6 +66,8 @@ class ApplicationActivity : AppCompatActivity() {
 
     @Composable
     fun ApplicationNavigationGraph(navController: NavHostController) {
+        val friendsService: FriendsService = viewModel.friendsService
+
         NavHost(navController, startDestination = BottomBarRoutes.Calendar.screen_route) {
             composable(BottomBarRoutes.Calendar.screen_route) {
                 Calendar()
@@ -77,7 +76,7 @@ class ApplicationActivity : AppCompatActivity() {
                 AddPost()
             }
             composable(BottomBarRoutes.Friends.screen_route) {
-                Friends()
+                Friends(friendsService)
             }
         }
     }

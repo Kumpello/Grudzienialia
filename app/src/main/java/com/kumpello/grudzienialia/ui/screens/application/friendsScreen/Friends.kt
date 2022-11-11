@@ -7,21 +7,31 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.TextField
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kumpello.grudzienialia.R
+import com.kumpello.grudzienialia.data.remote.User
 import com.kumpello.grudzienialia.domain.model.NetworkModule
 import com.kumpello.grudzienialia.domain.usecase.FriendsService
 import com.kumpello.grudzienialia.ui.theme.GrudzienialiaTheme
 
 @Composable
 fun Friends(friendsService: FriendsService) {
+    var userList: List<User>
+    Refresh(friendsService) {
+        result ->
+        run {
+            if (result.isSuccess) {
+                userList = result.getOrThrow()
+            }
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -29,7 +39,8 @@ fun Friends(friendsService: FriendsService) {
             .wrapContentSize(Alignment.Center)
     ) {
         Row() {
-            
+            AddFriendButton(friendsService)
+            ChangeNickButton(friendsService)
         }
         LazyColumn(
             modifier = Modifier
@@ -44,12 +55,73 @@ fun Friends(friendsService: FriendsService) {
 }
 
 @Composable
-fun AddFriendButton() {
+fun AddFriendButton(friendsService: FriendsService) {
+    var showDialog by remember { mutableStateOf(false) }
+    Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
+        Button(
+            onClick = {
+                showDialog = true;
+            },
+            shape = RoundedCornerShape(50.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Text(text = "Add Friend")
+        }
+    }
+    if (showDialog) {
+        makeAlertDialog(text = "Please type in friends email") { result ->
+            run {
+                if (result.isSuccess) {
+                    friendsService.addFriend(result.getOrNull()) { addFriendResult ->
+                        run {
+                            if (addFriendResult.isSuccess) {
+                                //Todo refresh/toast
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChangeNickButton(friendsService: FriendsService) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
+        Button(
+            onClick = {
+                showDialog = true
+            },
+            shape = RoundedCornerShape(50.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            Text(text = "Add Friend")
+        }
+    }
+    if (showDialog) {
+        makeAlertDialog(text = "Please type in your new nick") { result ->
+            run {
+                if (result.isSuccess) {
+                    friendsService.changeNick(result.getOrNull())
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun removeFriend(friendsService: FriendsService, user: User) {
     Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
         Button(
             onClick = {
 
-                },
+            },
             shape = RoundedCornerShape(50.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -61,11 +133,11 @@ fun AddFriendButton() {
 }
 
 @Composable
-fun makeAlertDialog(text: String, callback: (Result<Unit>) -> Unit) {
+fun makeAlertDialog(text: String, callback: (Result<String>) -> Unit) {
     GrudzienialiaTheme() {
         Column {
-            val openDialog = remember { mutableStateOf(false)  }
-
+            val openDialog = remember { mutableStateOf(false) }
+            val textState = remember { mutableStateOf(TextFieldValue()) }
             Button(onClick = {
                 openDialog.value = true
             }) {
@@ -82,15 +154,18 @@ fun makeAlertDialog(text: String, callback: (Result<Unit>) -> Unit) {
                         openDialog.value = false
                     },
                     title = {
-                        Text(text = "Dialog Title")
+                        Text(text = text)
                     },
                     text = {
-                        Text("Here is a text ")
+                        TextField(
+                            value = textState.value,
+                            onValueChange = { textState.value = it }
+                        )
                     },
                     confirmButton = {
                         Button(
-
                             onClick = {
+                                callback(Result.success(textState.value.text))
                                 openDialog.value = false
                             }) {
                             Text("This is the Confirm Button")
@@ -98,7 +173,6 @@ fun makeAlertDialog(text: String, callback: (Result<Unit>) -> Unit) {
                     },
                     dismissButton = {
                         Button(
-
                             onClick = {
                                 openDialog.value = false
                             }) {
@@ -107,6 +181,24 @@ fun makeAlertDialog(text: String, callback: (Result<Unit>) -> Unit) {
                     }
                 )
             }
+        }
+
+    }
+}
+
+@Composable
+fun UserView(user: User) {
+
+}
+
+fun Refresh(friendsService: FriendsService, callback: (Result<List<User>>) -> Unit) {
+    friendsService.getFriendsList {
+        result ->
+        run {
+            if (result.isSuccess) {
+                callback.invoke(Result.success(result.getOrThrow()))
+            }
+
         }
 
     }

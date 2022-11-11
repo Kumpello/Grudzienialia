@@ -48,6 +48,7 @@ fun Calendar() {
             val startMonth = remember { YearMonth.now().withMonth(12) }
             val endMonth = remember { YearMonth.now().withMonth(12) }
             var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+            var currentDay = CalendarDay(selectedDate!!, DayPosition.MonthDate)
 
             val state = rememberCalendarState(
                 startMonth = startMonth,
@@ -94,13 +95,14 @@ fun Calendar() {
                 dayContent = { day ->
                     Day(day, isSelected = selectedDate == day.date) { day ->
                         selectedDate = if (selectedDate == day.date) null else day.date
+                        currentDay = day
                     }
                 },
                 monthHeader = {
                     DaysOfWeekTitle(daysOfWeek = daysOfWeek)
                 }
             )
-            SelectedDay()
+            ShowDayEvents(currentDay)
         }
     })
 }
@@ -140,7 +142,7 @@ fun DaysOfWeekTitle(daysOfWeek: List<DayOfWeek>) {
 }
 
 @Composable
-fun SelectedDay() {
+fun ShowDayEvents(day: CalendarDay) {
 
 }
 

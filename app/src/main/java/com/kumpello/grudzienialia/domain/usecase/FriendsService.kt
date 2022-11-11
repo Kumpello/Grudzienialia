@@ -23,13 +23,15 @@ class FriendsService @Inject constructor(
     private val userEmail = firebaseAuth.currentUser!!.email
     private val userHash = userEmail.hashCode()
 
-    fun addFriend(friendsEmail: String, callback: (Result<Boolean>) -> Unit) {
+    fun addFriend(friendsEmail: String?, callback: (Result<Boolean>) -> Unit) {
         val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+".toRegex()
-        if (friendsEmail.isEmpty()) {
+        if (friendsEmail.isNullOrEmpty()) {
             callback(Result.failure(Exception("Friends email is empty")))
+            return
         }
         if (!friendsEmail.matches(emailPattern)) {
             callback(Result.failure(Exception("Friends email doesn't match patter ")))
+            return
         }
         val userHash: Int = userEmail.hashCode()
         findFriendID(friendsEmail) {
@@ -56,7 +58,7 @@ class FriendsService @Inject constructor(
         }
     }
 
-    fun changeNick(nick: String) {
+    fun changeNick(nick: String?) {
         Log.d("FriendsService", "Nick set to $nick")
         database.child(usersKey).child(userID).child("nick").setValue(nick)
     }
