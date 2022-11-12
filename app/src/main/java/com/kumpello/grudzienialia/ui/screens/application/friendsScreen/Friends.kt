@@ -3,6 +3,7 @@ package com.kumpello.grudzienialia.ui.screens.application.friendsScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
@@ -23,8 +24,8 @@ import com.kumpello.grudzienialia.ui.theme.GrudzienialiaTheme
 
 @Composable
 fun Friends(friendsService: FriendsService) {
-    var userList: List<User>
-    Refresh(friendsService) {
+    var userList: MutableList<User>? = null
+    refresh(friendsService) {
         result ->
         run {
             if (result.isSuccess) {
@@ -38,18 +39,11 @@ fun Friends(friendsService: FriendsService) {
             .background(colorResource(id = R.color.teal_700))
             .wrapContentSize(Alignment.Center)
     ) {
-        Row() {
+        Row {
             AddFriendButton(friendsService)
             ChangeNickButton(friendsService)
         }
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(colorResource(id = R.color.teal_700))
-                .wrapContentSize(Alignment.Center)
-        ) {
-
-        }
+        FriendsList(friendsService = friendsService, friends = userList)
     }
 
 }
@@ -60,7 +54,7 @@ fun AddFriendButton(friendsService: FriendsService) {
     Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
         Button(
             onClick = {
-                showDialog = true;
+                showDialog = true
             },
             shape = RoundedCornerShape(50.dp),
             modifier = Modifier
@@ -71,7 +65,7 @@ fun AddFriendButton(friendsService: FriendsService) {
         }
     }
     if (showDialog) {
-        makeAlertDialog(text = "Please type in friends email") { result ->
+        MakeAlertDialog(text = "Please type in friends email") { result ->
             run {
                 if (result.isSuccess) {
                     friendsService.addFriend(result.getOrNull()) { addFriendResult ->
@@ -105,7 +99,7 @@ fun ChangeNickButton(friendsService: FriendsService) {
         }
     }
     if (showDialog) {
-        makeAlertDialog(text = "Please type in your new nick") { result ->
+        MakeAlertDialog(text = "Please type in your new nick") { result ->
             run {
                 if (result.isSuccess) {
                     friendsService.changeNick(result.getOrNull())
@@ -116,11 +110,18 @@ fun ChangeNickButton(friendsService: FriendsService) {
 }
 
 @Composable
-fun removeFriend(friendsService: FriendsService, user: User) {
+fun RemoveFriendButton(friendsService: FriendsService, user: User, callback: (Result<Boolean>) -> Unit) {
     Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
         Button(
             onClick = {
-
+                friendsService.removeFriend(user.email) {
+                    result ->
+                    run {
+                        if (result.isSuccess) {
+                            callback.invoke(Result.success(true))
+                        }
+                    }
+                }
             },
             shape = RoundedCornerShape(50.dp),
             modifier = Modifier
@@ -133,8 +134,8 @@ fun removeFriend(friendsService: FriendsService, user: User) {
 }
 
 @Composable
-fun makeAlertDialog(text: String, callback: (Result<String>) -> Unit) {
-    GrudzienialiaTheme() {
+fun MakeAlertDialog(text: String, callback: (Result<String>) -> Unit) {
+    GrudzienialiaTheme {
         Column {
             val openDialog = remember { mutableStateOf(false) }
             val textState = remember { mutableStateOf(TextFieldValue()) }
@@ -187,11 +188,42 @@ fun makeAlertDialog(text: String, callback: (Result<String>) -> Unit) {
 }
 
 @Composable
-fun UserView(user: User) {
+fun FriendsList(friendsService: FriendsService, friends: MutableList<User>?) {
+    if (friends != null) {
+        LazyColumn {
+            items(
+                items = friends,
+                key = { friend ->
+                    friend.userId
+                }
+            ) { friend ->
+                UserView(friendsService, friend, friends)
+            }
+        }
+    }
+}
+
+
+@Composable
+fun UserView(friendsService: FriendsService, user: User, friends: MutableList<User>) {
+    Row(modifier = Modifier.padding(all = 8.dp)) {
+        Text(text = user.email)
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        RemoveFriendButton(friendsService = friendsService , user = user) {
+            result ->
+            run {
+                if (result.isSuccess) {
+                    friends.remove(user)
+                }
+            }
+        }
+    }
 
 }
 
-fun Refresh(friendsService: FriendsService, callback: (Result<List<User>>) -> Unit) {
+fun refresh(friendsService: FriendsService, callback: (Result<MutableList<User>>) -> Unit) {
     friendsService.getFriendsList {
         result ->
         run {

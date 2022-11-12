@@ -63,7 +63,7 @@ class FriendsService @Inject constructor(
         database.child(usersKey).child(userID).child("nick").setValue(nick)
     }
 
-    fun getFriendsList(callback: (Result<List<User>>) -> Unit) {
+    fun getFriendsList(callback: (Result<MutableList<User>>) -> Unit) {
         val friendsList: MutableList<User> = ArrayList()
         database.child(userFriendsKey).child(userHash.toString()).child(contactsKey).get()
             .addOnCompleteListener { task ->
