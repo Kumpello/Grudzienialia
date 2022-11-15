@@ -23,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kumpello.grudzienialia.data.remote.User
 import com.kumpello.grudzienialia.domain.usecase.FriendsService
 import com.kumpello.grudzienialia.ui.navigation.BottomBarRoutes
 import com.kumpello.grudzienialia.ui.screens.application.addPostScreen.AddPost
@@ -30,14 +31,14 @@ import com.kumpello.grudzienialia.ui.screens.application.calendarScreen.Calendar
 import com.kumpello.grudzienialia.ui.screens.application.friendsScreen.Friends
 
 class ApplicationActivity : AppCompatActivity() {
-    lateinit var viewModel: ApplicationActivityViewModel
+    private lateinit var viewModel: ApplicationActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        viewModel.friendsService.addUserToFriendsDataBase(User(viewModel.firebaseAuthentication.getUser().email!!, viewModel.firebaseAuthentication.getUser().uid))
         val viewModel: ApplicationActivityViewModel by viewModels()
         this.viewModel = viewModel
-        val activity = this
 
         setContent{
             ApplicationScreenView()

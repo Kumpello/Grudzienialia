@@ -6,6 +6,4 @@ import javax.inject.Inject
 
 @ViewModelScoped
 class Database @Inject constructor(database: DatabaseReference) {
-
-
 }
