@@ -27,7 +27,7 @@ fun AddPost(day: CalendarDay, friendsService: FriendsService, database: Database
         mutableStateOf(false)
     }
     var choosenFriend: User?
-    var friends: List<User>
+    var friends: List<User>? = null
 
     friendsService.getFriendsList { result ->
         run {
@@ -116,7 +116,7 @@ fun ChooseReceiver(callback: (ReceiverType) -> Unit) {
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ChooseFriend(list: List<User>) {
+fun ChooseFriend(list: List<User>?) {
     var selectedItem by remember {
         mutableStateOf("")
     }
@@ -146,22 +146,24 @@ fun ChooseFriend(list: List<User>) {
 
         // filter options based on text field value
         val filteringOptions =
-            list.filter { it.email.contains(selectedItem, ignoreCase = true) || it.nick.contains(selectedItem, ignoreCase = true) }
+            list?.filter { it.email.contains(selectedItem, ignoreCase = true) || it.nick.contains(selectedItem, ignoreCase = true) }
 
-        if (filteringOptions.isNotEmpty()) {
+        if (filteringOptions != null) {
+            if (filteringOptions.isNotEmpty()) {
 
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                filteringOptions.forEach { selectionOption ->
-                    DropdownMenuItem(
-                        onClick = {
-                            selectedItem = selectionOption.nick
-                            expanded = false
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    filteringOptions.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            onClick = {
+                                selectedItem = selectionOption.nick
+                                expanded = false
+                            }
+                        ) {
+                            Text(text = selectionOption.nick)
                         }
-                    ) {
-                        Text(text = selectionOption.nick)
                     }
                 }
             }
